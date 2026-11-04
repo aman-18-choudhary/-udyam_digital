@@ -16,10 +16,13 @@ function loadScript() {
   return loading;
 }
 
-// Resolves with the three values Razorpay returns on success; rejects with a readable error otherwise.
+// Resolves with the three values Razorpay returns on success; rejects only when the customer closes the window.
+// A failed attempt must NOT settle the promise: Razorpay keeps its window open for a retry, and a later
+// success inside that same window still has to reach the server for verification.
 export async function openCheckout(intent) {
   await loadScript();
   return new Promise((resolve, reject) => {
+    let lastFailure = "";
     const rzp = new window.Razorpay({
       key: intent.key_id,
       order_id: intent.razorpay_order_id,
@@ -29,9 +32,9 @@ export async function openCheckout(intent) {
       description: intent.description,
       theme: { color: "#e4002b" },
       handler: (r) => resolve(r),
-      modal: { ondismiss: () => reject(new Error("Payment was cancelled. You can try again.")) },
+      modal: { ondismiss: () => reject(new Error(lastFailure || "Payment was cancelled. You can try again.")) },
     });
-    rzp.on("payment.failed", (r) => reject(new Error(r?.error?.description || "The payment failed. You can try again.")));
+    rzp.on("payment.failed", (r) => { lastFailure = r?.error?.description || "The payment failed. You can try again."; });
     rzp.open();
   });
 }
