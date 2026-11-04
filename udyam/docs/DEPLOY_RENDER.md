@@ -3,9 +3,14 @@
 The repository root has a `Dockerfile` that builds the React app and serves it together with the API from one
 FastAPI process, and a `render.yaml` Blueprint. Data and files live in Supabase, so the service itself is stateless.
 
-Cost: Render's **Starter** plan (about US$7 a month) stays awake. The free plan works but sleeps after 15 minutes
-idle and takes about a minute to wake; if you use it, open the site a few minutes before anyone tests it.
-The same Dockerfile also works on Railway or Fly.io.
+Plan: this repo is set to Render's **free** plan (`plan: free` in `render.yaml`). What that means:
+* The service **sleeps after 15 minutes without traffic** and takes about a minute to wake on the next visit. Before
+  a judge or demo, open the site a few minutes earlier. To stay awake, point a free uptime monitor
+  (UptimeRobot, cron-job.org) at `https://<service>.onrender.com/api/health` every 5 minutes; one always-on service
+  fits inside Render's 750 free hours a month.
+* **512 MB RAM.** Enough for the API and one OCR at a time, but not for many simultaneous uploads. If you see
+  out-of-memory restarts in the logs, switch to `plan: starter` (about US$7 a month).
+* An order tracker open during a sleep reconnects by itself when the service wakes.
 
 ## 1. Put the code on GitHub
 ```bash

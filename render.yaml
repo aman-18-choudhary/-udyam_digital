@@ -5,7 +5,7 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     region: singapore          # closest Render region to India
-    plan: starter              # the free plan sleeps after 15 minutes idle; starter stays awake
+    plan: free                 # sleeps after 15 min idle (about 1 min to wake); 512 MB RAM. Use "starter" for always-on
     healthCheckPath: /api/health
     envVars:
       - { key: DATABASE_URL, sync: false }              # Supabase SESSION POOLER uri (Render has no IPv6)
