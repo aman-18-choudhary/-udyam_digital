@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { api, inr } from "../api.js";
+import Counter from "./Counter.jsx";
 
 export default function Quote({ sessionId, rec, bundle, setBundle, caseId, onBack, onNext }) {
   const [quote, setQuote] = useState(null);
@@ -83,11 +84,11 @@ export default function Quote({ sessionId, rec, bundle, setBundle, caseId, onBac
         )}
       </section>
 
-      <aside className="card side sticky">
+      <aside className="card side sticky tilt">
         <h3>Your price</h3>
         {quote ? (
           <>
-            <div className="big">{inr(quote.monthly_total)}<small>/month incl. GST</small></div>
+            <div className="big"><Counter value={quote.monthly_total} /><small>/month incl. GST</small></div>
             <dl className="totals">
               <div><dt>Monthly (before GST)</dt><dd>{inr(quote.monthly_subtotal)}</dd></div>
               <div><dt>GST 18%</dt><dd>{inr(quote.monthly_gst)}</dd></div>

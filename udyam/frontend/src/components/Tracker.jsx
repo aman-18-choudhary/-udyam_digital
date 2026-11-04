@@ -25,7 +25,7 @@ export default function Tracker({ order: initial, onRestart }) {
   const evOf = (s) => order.events.find((e) => e.status === s);
 
   return (
-    <section className="card narrow">
+    <section className="card narrow tilt">
       <div className="row between">
         <h2>{done ? "You are live!" : "Tracking your order"}</h2>
         <span className={`pill ${live && !done ? "ok" : ""}`}>{done ? "Complete" : live ? "● Live" : "Reconnecting…"}</span>

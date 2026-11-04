@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api, inr } from "../api.js";
+import Counter from "./Counter.jsx";
 
 export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRec, onCheckout }) {
   const [msgs, setMsgs] = useState([]);
@@ -64,7 +65,7 @@ export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRe
         </form>
       </section>
 
-      <aside className="card side">
+      <aside className="card side tilt">
         {!rec ? (
           <>
             <h3>How it works</h3>
@@ -85,7 +86,7 @@ export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRe
                 <li key={i.product_id}><span>{i.name}{i.qty > 1 ? ` × ${i.qty}` : ""}</span></li>
               ))}
             </ul>
-            <div className="big">{inr(rec.quote.monthly_total)}<small>/month incl. GST</small></div>
+            <div className="big"><Counter value={rec.quote.monthly_total} /><small>/month incl. GST</small></div>
             <p className="muted">+ {inr(rec.quote.setup_total)} one-time setup · live in about {rec.quote.install_days} days</p>
             {rec.saving_with_24_months > 0 && rec.term === 12 && (
               <p className="note">Save about {inr(rec.saving_with_24_months)}/month with a 24-month term.</p>

@@ -34,7 +34,7 @@ export default function Pay({ sessionId, caseId, bundle, order, setOrder, demo, 
   }
 
   return (
-    <section className="card narrow">
+    <section className="card narrow tilt">
       <h2>Review and pay</h2>
       {!order ? (err ? <p className="err" role="alert">{err}</p> : <p className="muted">Preparing your order…</p>) : (
         <>

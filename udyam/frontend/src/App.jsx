@@ -7,6 +7,8 @@ import Kyc from "./components/Kyc.jsx";
 import Pay from "./components/Pay.jsx";
 import Tracker from "./components/Tracker.jsx";
 import Console from "./components/Console.jsx";
+import Backdrop from "./components/Backdrop.jsx";
+import useTilt from "./components/useTilt.js";
 
 const STAGES = [["advise", "Advise"], ["quote", "Quote"], ["kyc", "Verify"], ["pay", "Pay"], ["track", "Track"]];
 const LANGS = { en: "English", hi: "हिन्दी", mr: "मराठी", ta: "தமிழ்", te: "తెలుగు", bn: "বাংলা", gu: "ગુજરાતી", kn: "ಕನ್ನಡ", ml: "മലയാളം", pa: "ਪੰਜਾਬੀ" };
@@ -32,20 +34,13 @@ export default function App({ clerk = false }) {
       </section></main></div>
     );
   }
+  // dev only (stripped from production builds): #/landing shows the signed-out page without signing out
+  if (import.meta.env.DEV && location.hash === "#/landing") return <Landing preview />;
   if (!cfg.auth_required) return <Journey cfg={cfg} clerk={false} />;
   return (
     <>
       <SignedOut>
-        <div className="shell">
-          <header className="top"><div className="brand"><span className="logo">a</span><div><b>Udyam Digital</b><small>Accel Business for small businesses</small></div></div></header>
-          <main className="stage signin">
-            <div>
-              <h1>Get your business online in one sitting</h1>
-              <p className="muted">Sign in to get a recommendation, a clear price and fast verification. Your documents stay private and you can delete them any time.</p>
-            </div>
-            <SignIn routing="hash" />
-          </main>
-        </div>
+        <Landing />
       </SignedOut>
       <SignedIn>
         <WithClerkToken><Journey cfg={cfg} clerk /></WithClerkToken>
@@ -54,7 +49,37 @@ export default function App({ clerk = false }) {
   );
 }
 
+function Landing({ preview = false }) {
+  useTilt();
+  return (
+    <div className="shell landing">
+      <Backdrop variant="hero" />
+      <header className="top">
+        <div className="brand"><span className="logo">a</span><div><b>Udyam Digital</b><small>Accel Business for small businesses</small></div></div>
+      </header>
+      <main className="hero">
+        <div className="hero-copy stage-in">
+          <span className="eyebrow">Airtel Sync 2026 · Project Udyam</span>
+          <h1>Get your business <em>online</em> in one sitting</h1>
+          <p className="lead">Tell us about your shop, clinic or workshop. Get the right internet, phone and security bundle at one clear price, verify in minutes and track installation live. No sales visits, no paperwork queues.</p>
+          <div className="features">
+            <div className="card tilt feature"><b>5</b><span>questions to a recommended bundle</span></div>
+            <div className="card tilt feature"><b>4</b><span>documents, read and checked in seconds</span></div>
+            <div className="card tilt feature"><b>0</b><span>sales visits needed to get started</span></div>
+          </div>
+          <ul className="proof">
+            <li>Hindi and 9 more languages</li><li>GST and Udyam check</li><li>UPI and card payments</li><li>Live order tracking</li><li>Delete your documents any time</li>
+          </ul>
+        </div>
+        <div className="hero-auth">{preview ? <div className="card" style={{ width: "min(380px, 100%)", height: 420, display: "grid", placeItems: "center" }}>Clerk sign-in card (dev preview)</div> : <SignIn routing="hash" />}</div>
+      </main>
+      <footer className="foot">Synthetic data for the Airtel Sync 2026 case. Payments run in test mode.</footer>
+    </div>
+  );
+}
+
 function Journey({ cfg, clerk }) {
+  useTilt();
   const [route, setRoute] = useState(location.hash === "#/console" ? "console" : "app");
   const [me, setMe] = useState(null);
   const [lang, setLang] = useState("en");
@@ -86,6 +111,7 @@ function Journey({ cfg, clerk }) {
 
   return (
     <div className="shell">
+      <Backdrop variant="ambient" />
       <header className="top">
         <div className="brand">
           <span className="logo">a</span>
@@ -128,7 +154,7 @@ function Journey({ cfg, clerk }) {
               </div>
             </section>
           )}
-          <main className="stage">
+          <main className="stage stage-in">
             {stage === "advise" && (
               <Advisor lang={lang} sessionId={sessionId} setSessionId={setSessionId}
                 onProfile={setProfile} onRec={(r, p) => { setRec(r); setProfile(p); }}
