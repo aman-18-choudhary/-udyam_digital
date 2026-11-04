@@ -114,3 +114,17 @@ def test_demo_helpers_are_off_when_demo_mode_is_off(client, monkeypatch):
 def test_health_checks_the_database(client):
     h = client.get("/api/health")
     assert h.status_code == 200 and h.json()["db"] == "up"
+
+
+def test_health_reports_encryption_and_a_deep_storage_probe(client):
+    h = client.get("/api/health?deep=1").json()
+    assert h["encryption"] == "ok" and h["storage_read_write"] == "ok" and h["ok"] is True
+
+
+def test_unhandled_errors_return_a_reference_not_internals(app_factory, monkeypatch):
+    from fastapi.testclient import TestClient
+    client, main = app_factory(auth=False)
+    quiet = TestClient(main.app, raise_server_exceptions=False)
+    monkeypatch.setattr(main, "advisor_opening", lambda lang: 1 / 0)
+    r = quiet.post("/api/advisor/start", json={"language": "en"})
+    assert r.status_code == 500 and "Reference:" in r.json()["detail"] and "ZeroDivision" not in r.text

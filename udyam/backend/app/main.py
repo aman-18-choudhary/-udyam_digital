@@ -16,7 +16,7 @@ from datetime import timedelta
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel, Field
@@ -26,7 +26,7 @@ from . import config, llm, orders, payments, propensity
 from .advisor import (build_recommendation, handle as advisor_handle, opening as advisor_opening, to_profile)
 from .auth import User, current_user, require_roles, require_staff
 from .config import DATA_DIR, KYC_RETENTION_DAYS_REJECTED
-from .crypto import decrypt_bytes, decrypt_json, encrypt_bytes, encrypt_json
+from .crypto import decrypt_bytes, decrypt_json, encrypt_bytes, encrypt_json, selfcheck
 from .data import catalogue
 from .db import (AuditLog, ChatSession, Consent, KycCase, Order, SessionLocal, audit, init_db, iso, now, engine)
 from .kyc import DOC_TYPES, extract, validate
@@ -79,6 +79,7 @@ app.add_middleware(CORSMiddleware, allow_origins=config.CORS_ORIGINS, allow_meth
 @app.middleware("http")
 async def access_log(request: Request, call_next):
     rid = uuid.uuid4().hex[:8]
+    request.state.rid = rid
     t0 = time.perf_counter()
     resp = await call_next(request)
     resp.headers["x-request-id"] = rid
@@ -89,6 +90,16 @@ async def access_log(request: Request, call_next):
     log.info("%s %s %s %dms rid=%s", request.method, request.url.path, resp.status_code,
              (time.perf_counter() - t0) * 1000, rid)
     return resp
+
+
+@app.exception_handler(Exception)
+async def unhandled(request: Request, exc: Exception):
+    """Log the real error server side; the customer gets a short message and a reference to quote."""
+    rid = getattr(request.state, "rid", uuid.uuid4().hex[:8])
+    log.error("unhandled %s on %s %s rid=%s", type(exc).__name__, request.method, request.url.path, rid,
+              exc_info=exc)
+    return JSONResponse({"detail": f"Something went wrong on our side. Please try again. Reference: {rid}"},
+                        status_code=500)
 
 
 _hits: dict[tuple[str, str], deque] = defaultdict(deque)
@@ -150,16 +161,31 @@ def profile_of(s: ChatSession, db, case_id: str | None = None) -> Profile:
 
 # ---------------------------------------------------------------- meta
 @app.get("/api/health")
-def health():
+def health(deep: bool = False):
+    """Shallow by default (cheap enough for a platform health check). `?deep=1` also writes, reads and deletes a
+    probe object in document storage, which is the quickest way to check Supabase keys and the bucket."""
     try:
         with engine.connect() as c:
             c.execute(text("select 1"))
         db_ok = True
     except Exception:
         db_ok = False
-    body = {"ok": db_ok, "db": "up" if db_ok else "down", "llm": llm.status(), "storage": get_storage().name, "payments": payments.provider(),
-            "auth": "clerk" if config.AUTH_REQUIRED else "off"}
-    return Response(json.dumps(body), status_code=200 if db_ok else 503, media_type="application/json")
+    enc = selfcheck()
+    body = {"db": "up" if db_ok else "down", "encryption": enc, "llm": llm.status(), "storage": get_storage().name,
+            "payments": payments.provider(), "auth": "clerk" if config.AUTH_REQUIRED else "off"}
+    ok = db_ok and enc == "ok"
+    if deep:
+        try:
+            st = get_storage()
+            st.put("_health/probe.bin", b"ok")
+            good = st.get("_health/probe.bin") == b"ok"
+            st.delete(["_health/probe.bin"])
+            body["storage_read_write"] = "ok" if good else "mismatch"
+        except Exception as e:
+            body["storage_read_write"] = f"failed ({type(e).__name__})"
+        ok = ok and body["storage_read_write"] == "ok"
+    body["ok"] = ok
+    return Response(json.dumps(body), status_code=200 if ok else 503, media_type="application/json")
 
 
 @app.get("/api/config")

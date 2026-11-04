@@ -6,7 +6,7 @@ services:
     dockerfilePath: ./Dockerfile
     region: singapore          # closest Render region to India
     plan: free                 # sleeps after 15 min idle (about 1 min to wake); 512 MB RAM. Use "starter" for always-on
-    healthCheckPath: /api/health
+    healthCheckPath: /api/config   # liveness only; /api/health?deep=1 is the full diagnostic
     envVars:
       - { key: DATABASE_URL, sync: false }              # Supabase SESSION POOLER uri (Render has no IPv6)
       - { key: SUPABASE_URL, sync: false }

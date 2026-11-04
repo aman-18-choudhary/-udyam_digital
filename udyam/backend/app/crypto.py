@@ -37,3 +37,11 @@ def encrypt_json(obj) -> str:
 
 def decrypt_json(token: str):
     return json.loads(_fernet().decrypt(token.encode()).decode())
+
+
+def selfcheck() -> str:
+    """'ok' or the kind of problem, never the key itself. Used by /api/health."""
+    try:
+        return "ok" if decrypt_json(encrypt_json({"t": 1})) == {"t": 1} else "roundtrip mismatch"
+    except Exception as e:
+        return f"invalid KYC_ENC_KEY ({type(e).__name__}): it must be a 44-character Fernet key"
