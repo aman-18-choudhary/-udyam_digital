@@ -128,3 +128,8 @@ def test_unhandled_errors_return_a_reference_not_internals(app_factory, monkeypa
     monkeypatch.setattr(main, "advisor_opening", lambda lang: 1 / 0)
     r = quiet.post("/api/advisor/start", json={"language": "en"})
     assert r.status_code == 500 and "Reference:" in r.json()["detail"] and "ZeroDivision" not in r.text
+
+
+def test_uptime_monitors_can_use_head(client):
+    assert client.head("/api/health").status_code == 200
+    assert client.head("/api/config").status_code == 200

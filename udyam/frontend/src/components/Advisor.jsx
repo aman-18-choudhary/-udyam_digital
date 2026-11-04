@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { api, inr } from "../api.js";
 import Counter from "./Counter.jsx";
 
-export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRec, onCheckout }) {
+export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRec, onCheckout, orders = 0, onOrders }) {
   const [msgs, setMsgs] = useState([]);
   const [chips, setChips] = useState([]);
   const [text, setText] = useState("");
@@ -11,14 +11,15 @@ export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRe
   const [err, setErr] = useState("");
   const end = useRef(null);
 
-  useEffect(() => {
-    if (sessionId) return;
+  const begin = () => {
+    setErr("");
     api.start(lang).then((r) => {
       setSessionId(r.session_id);
       setMsgs([{ who: "bot", text: r.reply }]);
       setChips(r.chips || []);
     }).catch((e) => setErr(e.message));
-  }, []); // eslint-disable-line
+  };
+  useEffect(() => { if (!sessionId) begin(); }, []); // eslint-disable-line
 
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [msgs, busy]);
 
@@ -52,10 +53,10 @@ export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRe
           {msgs.map((m, i) => (
             <div key={i} className={`bubble ${m.who}`}>{m.text}</div>
           ))}
-          {busy && <div className="bubble bot typing"><i /><i /><i /></div>}
+          {(busy || (!sessionId && !err)) && <div className="bubble bot typing"><i /><i /><i /></div>}
           <div ref={end} />
         </div>
-        {err && <p className="err" role="alert">{err}</p>}
+        {err && <p className="err" role="alert">{err}{!sessionId && <> <button className="link" onClick={begin}>Try again</button></>}</p>}
         <div className="chips">
           {chips.map((c) => <button key={c} className="chip" onClick={() => send(c)} disabled={busy}>{c}</button>)}
         </div>
@@ -66,6 +67,12 @@ export default function Advisor({ lang, sessionId, setSessionId, onProfile, onRe
       </section>
 
       <aside className="card side tilt">
+        {orders > 0 && (
+          <div className="orders-hint">
+            <div><b>You have {orders} order{orders === 1 ? "" : "s"}</b><small>Track status or finish a payment</small></div>
+            <button className="btn ghost small" onClick={onOrders}>My orders</button>
+          </div>
+        )}
         {!rec ? (
           <>
             <h3>How it works</h3>

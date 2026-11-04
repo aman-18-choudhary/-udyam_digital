@@ -149,15 +149,21 @@ function Journey({ cfg, clerk }) {
           <div hidden={view === "orders"}>
           <nav className="steps" aria-label="Progress">
             {STAGES.map(([k, label], i) => (
-              <div key={k} className={`step ${i < reached ? "done" : ""} ${i === reached ? "now" : ""}`}>
-                <span>{i < reached ? "✓" : i + 1}</span>{label}
-              </div>
+              k === "track" && stage !== "track" && myOrders.length > 0 ? (
+                <button key={k} className="step clickable" onClick={openOrders} title="See and track your orders">
+                  <span>{i + 1}</span>{label} ({myOrders.length})
+                </button>
+              ) : (
+                <div key={k} className={`step ${i < reached ? "done" : ""} ${i === reached ? "now" : ""}`}>
+                  <span>{i < reached ? "✓" : i + 1}</span>{label}
+                </div>
+              )
             ))}
           </nav>
           <main className="stage stage-in">
             {stage === "advise" && (
               <Advisor lang={lang} sessionId={sessionId} setSessionId={setSessionId}
-                onProfile={setProfile} onRec={(r, p) => { setRec(r); setProfile(p); }}
+                onProfile={setProfile} onRec={(r, p) => { setRec(r); setProfile(p); }} orders={myOrders.length} onOrders={openOrders}
                 onCheckout={(r) => { setBundle({ items: r.items.map((i) => ({ product_id: i.product_id, qty: i.qty, included: i.included })), term: r.term }); setStage("quote"); }} />
             )}
             {stage === "quote" && <Quote sessionId={sessionId} rec={rec} bundle={bundle} setBundle={setBundle} caseId={caseId} onBack={() => setStage("advise")} onNext={() => setStage("kyc")} />}

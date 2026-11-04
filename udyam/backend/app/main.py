@@ -160,7 +160,7 @@ def profile_of(s: ChatSession, db, case_id: str | None = None) -> Profile:
 
 
 # ---------------------------------------------------------------- meta
-@app.get("/api/health")
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health(deep: bool = False):
     """Shallow by default (cheap enough for a platform health check). `?deep=1` also writes, reads and deletes a
     probe object in document storage, which is the quickest way to check Supabase keys and the bucket."""
@@ -188,7 +188,7 @@ def health(deep: bool = False):
     return Response(json.dumps(body), status_code=200 if ok else 503, media_type="application/json")
 
 
-@app.get("/api/config")
+@app.api_route("/api/config", methods=["GET", "HEAD"])
 def get_config():
     return {"languages": LANGS, "llm": llm.status(), "today": config.TODAY.isoformat(),
             "consent_version": NOTICE_VERSION, "document_types": DOC_TYPES, "demo": config.DEMO_MODE,
@@ -849,7 +849,7 @@ _DIST = Path(os.getenv("WEB_DIST_DIR") or config.PROJECT_ROOT / "udyam" / "front
 if (_DIST / "index.html").exists():
     app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
 
-    @app.get("/{path:path}", include_in_schema=False)
+    @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
     def web_app(path: str):
         if path.startswith("api/"):
             raise HTTPException(404, "Not found")

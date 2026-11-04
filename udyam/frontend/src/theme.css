@@ -190,3 +190,6 @@ code { background: rgba(255, 255, 255, .1); padding: 1px 6px; border-radius: 6px
 .orders small { display: block; color: var(--mut); font-size: 13px; }
 .orders-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .orders-right .btn { margin-top: 0; }
+
+button.step { font: inherit; cursor: pointer; } .step.clickable { color: var(--ink); border-color: rgba(255, 90, 120, .5); } .step.clickable:hover { background: var(--red-t); transform: translateY(-2px); }
+.orders-hint { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 14px; border-radius: 14px; border: 1px solid rgba(255, 90, 120, .45); background: var(--red-t); } .orders-hint small { display: block; color: var(--mut); font-size: 13px; } .orders-hint .btn { margin-top: 0; }
