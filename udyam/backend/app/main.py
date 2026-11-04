@@ -553,6 +553,16 @@ def create_order(body: OrderIn, db=Depends(db_dep), user: User = Depends(current
     blob = _blob(case)["docs"]
     name = (blob.get("gst", {}).get("fields", {}).get("trade_name")
             or blob.get("udyam", {}).get("fields", {}).get("enterprise_name") or s.extra.get("trade_name") or "")
+    # One unpaid order per KYC case: going Back and forward must not pile up duplicates. The bundle is refreshed,
+    # and a Razorpay order created for a different amount is dropped so the customer is never charged a stale price.
+    o = db.scalar(select(Order).where(Order.kyc_case_id == case.id, Order.status.in_(("PAYMENT_PENDING", "PAYMENT_FAILED")))
+                  .order_by(Order.created_at.desc()))
+    if o:
+        if o.quote.get("first_payment") != q["first_payment"]:
+            o.payment_ref = None
+        o.items, o.quote, o.business_name = items, q, name
+        db.commit()
+        return orders.serialise(o)
     o = Order(session_id=s.id, kyc_case_id=case.id, items=items, quote=q, business_name=name)
     db.add(o)
     db.flush()

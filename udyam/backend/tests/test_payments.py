@@ -203,3 +203,23 @@ def test_online_flow_is_off_without_keys(app_factory):
     o = new_order(client)
     assert client.post(f"/api/orders/{o['id']}/payment-intent").status_code == 409
     assert client.post("/api/webhooks/razorpay", content=b"{}", headers={"x-razorpay-signature": "x"}).status_code == 400
+
+
+def test_reopening_checkout_reuses_the_unpaid_order_and_refreshes_its_price(rz):
+    client, _, fake = rz
+    first = new_order(client)
+    sid_case = client.get(f"/api/orders/{first['id']}").json()
+    # the same customer goes Back and forward: build the order again for the same KYC case
+    from app.main import SessionLocal
+    from app.db import Order
+    with SessionLocal() as db:
+        o = db.get(Order, first["id"])
+        sid, cid = o.session_id, o.kyc_case_id
+    intent1 = client.post(f"/api/orders/{first['id']}/payment-intent").json()
+    smaller = [{"product_id": "P02", "qty": 1, "included": True}]
+    again = client.post("/api/orders", json={"session_id": sid, "kyc_case_id": cid, "items": smaller}).json()
+    assert again["id"] == first["id"]                                  # no duplicate order
+    assert again["first_payment"] != first["first_payment"]            # price follows the new bundle
+    intent2 = client.post(f"/api/orders/{first['id']}/payment-intent").json()
+    assert intent2["amount_paise"] == again["first_payment"] * 100     # never the stale amount
+    assert intent2["razorpay_order_id"] != intent1["razorpay_order_id"]

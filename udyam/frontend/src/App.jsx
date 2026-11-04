@@ -7,6 +7,7 @@ import Kyc from "./components/Kyc.jsx";
 import Pay from "./components/Pay.jsx";
 import Tracker from "./components/Tracker.jsx";
 import Console from "./components/Console.jsx";
+import Orders from "./components/Orders.jsx";
 import Backdrop from "./components/Backdrop.jsx";
 import useTilt from "./components/useTilt.js";
 
@@ -92,6 +93,9 @@ function Journey({ cfg, clerk }) {
   const [kycStatus, setKycStatus] = useState(null);
   const [order, setOrder] = useState(null);
   const [myOrders, setMyOrders] = useState([]);
+  const [view, setView] = useState("journey");   // journey | orders
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [fromOrders, setFromOrders] = useState(false);
 
   useEffect(() => {
     api.me().then(setMe).catch(() => {});
@@ -101,11 +105,15 @@ function Journey({ cfg, clerk }) {
     return () => window.removeEventListener("hashchange", on);
   }, []);
 
+  const loadOrders = () => { setOrdersLoading(true); return api.myOrders().then(setMyOrders).catch(() => {}).finally(() => setOrdersLoading(false)); };
+  const openOrders = () => { setView("orders"); loadOrders(); };
+  const goTrack = (o) => { setOrder(o); setFromOrders(true); setStage("track"); setView("journey"); };
+  const goPay = (o) => { setOrder(o); setFromOrders(true); setStage("pay"); setView("journey"); };
   const reached = STAGES.findIndex(([k]) => k === stage);
   const restart = () => {
     setSessionId(null); setProfile({}); setRec(null); setBundle({ items: [], term: 12 });
-    setCaseId(null); setKycStatus(null); setOrder(null); setStage("advise");
-    api.myOrders().then(setMyOrders).catch(() => {});
+    setCaseId(null); setKycStatus(null); setOrder(null); setFromOrders(false); setStage("advise");
+    loadOrders();
   };
   const staff = !!me?.staff;
 
@@ -125,6 +133,7 @@ function Journey({ cfg, clerk }) {
           <select value={lang} disabled={stage !== "advise" || !!sessionId} onChange={(e) => setLang(e.target.value)} aria-label="Language">
             {Object.entries(LANGS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
+          <button className="link" onClick={() => (view === "orders" ? setView("journey") : openOrders())}>{view === "orders" ? "Back to journey" : `My orders${myOrders.length ? ` (${myOrders.length})` : ""}`}</button>
           {staff && <a className="link" href={route === "console" ? "#/" : "#/console"}>{route === "console" ? "Customer view" : "Staff console"}</a>}
           {clerk && <UserButton />}
         </div>
@@ -134,6 +143,10 @@ function Journey({ cfg, clerk }) {
         <Console role={me?.role} />
       ) : (
         <>
+          {view === "orders" && (
+            <main className="stage stage-in"><Orders orders={myOrders} loading={ordersLoading} onTrack={goTrack} onPay={goPay} onNew={() => { restart(); setView("journey"); }} /></main>
+          )}
+          <div hidden={view === "orders"}>
           <nav className="steps" aria-label="Progress">
             {STAGES.map(([k, label], i) => (
               <div key={k} className={`step ${i < reached ? "done" : ""} ${i === reached ? "now" : ""}`}>
@@ -141,19 +154,6 @@ function Journey({ cfg, clerk }) {
               </div>
             ))}
           </nav>
-          {stage === "advise" && !sessionId && myOrders.length > 0 && (
-            <section className="stage" style={{ paddingBottom: 0 }}>
-              <div className="card">
-                <h3>Your orders</h3>
-                <ul className="mini">
-                  {myOrders.map((o) => (
-                    <li key={o.id} className="row between"><span>{o.business_name || o.id} · <b>{o.label}</b></span>
-                      <button className="link" onClick={() => { setOrder(o); setStage("track"); }}>Track</button></li>
-                  ))}
-                </ul>
-              </div>
-            </section>
-          )}
           <main className="stage stage-in">
             {stage === "advise" && (
               <Advisor lang={lang} sessionId={sessionId} setSessionId={setSessionId}
@@ -165,9 +165,10 @@ function Journey({ cfg, clerk }) {
               <Kyc sessionId={sessionId} caseId={caseId} setCaseId={setCaseId} setKycStatus={setKycStatus} kycStatus={kycStatus}
                 demo={cfg.demo} onBack={() => setStage("quote")} onNext={() => setStage("pay")} />
             )}
-            {stage === "pay" && <Pay sessionId={sessionId} caseId={caseId} bundle={bundle} order={order} setOrder={setOrder} demo={cfg.demo} payments={cfg.payments} onBack={() => setStage("kyc")} onPaid={() => setStage("track")} />}
+            {stage === "pay" && <Pay sessionId={sessionId} caseId={caseId} bundle={bundle} order={order} setOrder={setOrder} demo={cfg.demo} payments={cfg.payments} onBack={() => (fromOrders ? openOrders() : setStage("kyc"))} onPaid={() => { setStage("track"); loadOrders(); }} />}
             {stage === "track" && <Tracker order={order} onRestart={restart} />}
           </main>
+          </div>
         </>
       )}
       <footer className="foot">

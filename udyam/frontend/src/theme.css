@@ -182,3 +182,11 @@ code { background: rgba(255, 255, 255, .1); padding: 1px 6px; border-radius: 6px
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .tilt { transform: none !important; } }
 @supports not (backdrop-filter: blur(1px)) { .card, .top { background: var(--solid); } }
+
+/* ---------- my orders ---------- */
+.orders { list-style: none; padding: 0; margin: 14px 0 0; }
+.orders li { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px; margin: 8px 0; border: 1px solid var(--line); border-radius: 16px; background: rgba(255, 255, 255, .04); transition: transform .2s, border-color .2s; flex-wrap: wrap; }
+.orders li:hover { transform: translateY(-2px); border-color: rgba(255, 90, 120, .5); }
+.orders small { display: block; color: var(--mut); font-size: 13px; }
+.orders-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.orders-right .btn { margin-top: 0; }
