@@ -1,0 +1,9 @@
+# Local container run: the same single image Render builds. Reads udyam/backend/.env.
+services:
+  app:
+    build:
+      context: ..
+      args:
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
+    env_file: ./backend/.env
+    ports: ["8000:8000"]

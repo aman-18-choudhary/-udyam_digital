@@ -1,0 +1,15 @@
+.DS_Store
+.claude/
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.env
+.kyc.key
+*.db
+uploads/
+# case brief and the organisers' specimen documents stay out of the public repo; the CSVs are needed to run
+6ad9d4887d445_airtel_sync/
+YTL_TrackA_Udyam_Digital_Data/kyc_documents/
+YTL_TrackA_Udyam_Digital_Data/*.zip

@@ -1,0 +1,25 @@
+# Render Blueprint: one Docker web service (API + web app). Secrets are entered in the dashboard, never here.
+services:
+  - type: web
+    name: udyam-digital
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore          # closest Render region to India
+    plan: starter              # the free plan sleeps after 15 minutes idle; starter stays awake
+    healthCheckPath: /api/health
+    envVars:
+      - { key: DATABASE_URL, sync: false }              # Supabase SESSION POOLER uri (Render has no IPv6)
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SERVICE_ROLE_KEY, sync: false }
+      - { key: SUPABASE_BUCKET, value: kyc-documents }
+      - { key: CLERK_ISSUER, sync: false }
+      - { key: CLERK_AUTHORIZED_PARTIES, sync: false }  # https://<your-service>.onrender.com
+      - { key: VITE_CLERK_PUBLISHABLE_KEY, sync: false }  # used at build time
+      - { key: KYC_ENC_KEY, sync: false }
+      - { key: GEMINI_API_KEY, sync: false }
+      - { key: RAZORPAY_KEY_ID, sync: false }
+      - { key: RAZORPAY_KEY_SECRET, sync: false }
+      - { key: RAZORPAY_WEBHOOK_SECRET, sync: false }
+      - { key: CORS_ORIGINS, sync: false }              # same as the service URL
+      - { key: DEMO_MODE, value: "false" }
+      - { key: UDYAM_TODAY, value: "2026-07-15" }       # ONLY while judges test with the case's specimen documents

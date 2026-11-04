@@ -1,0 +1,16 @@
+**/node_modules
+**/.venv
+**/dist
+**/__pycache__
+**/.env
+**/.kyc.key
+**/*.db
+**/uploads
+.git
+.claude
+*.pptx
+*.pdf
+6ad9d4887d445_airtel_sync
+YTL_TrackA_Udyam_Digital_Data/kyc_documents
+YTL_TrackA_Udyam_Digital_Data/*.zip
+udyam/backend/tests
