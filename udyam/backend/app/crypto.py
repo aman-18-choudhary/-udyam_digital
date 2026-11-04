@@ -13,7 +13,7 @@ from .config import BASE_DIR
 
 @lru_cache(maxsize=1)
 def _fernet() -> Fernet:
-    key = os.getenv("KYC_ENC_KEY")
+    key = (os.getenv("KYC_ENC_KEY") or "").strip()
     if not key:
         keyfile = BASE_DIR / ".kyc.key"
         if not keyfile.exists():
