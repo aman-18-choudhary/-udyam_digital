@@ -11,5 +11,8 @@ __pycache__/
 uploads/
 # case brief and the organisers' specimen documents stay out of the public repo; the CSVs are needed to run
 6ad9d4887d445_airtel_sync/
-YTL_TrackA_Udyam_Digital_Data/kyc_documents/
-YTL_TrackA_Udyam_Digital_Data/*.zip
+udyam/data/kyc_documents/
+udyam/data/*.zip
+# local copies of the pitch deck and its build output live in udyam/docs
+/TeamCracker_*
+/YTL_TrackA_Udyam_Digital_Data/

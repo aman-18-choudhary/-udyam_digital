@@ -11,6 +11,6 @@
 *.pptx
 *.pdf
 6ad9d4887d445_airtel_sync
-YTL_TrackA_Udyam_Digital_Data/kyc_documents
-YTL_TrackA_Udyam_Digital_Data/*.zip
+udyam/data/kyc_documents
+udyam/data/*.zip
 udyam/backend/tests

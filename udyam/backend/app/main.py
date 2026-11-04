@@ -845,7 +845,7 @@ def advance_order(oid: str, db=Depends(db_dep), user: User = Depends(require_rol
 # ---------------------------------------------------------------- web app (single-origin deployment)
 # When the built frontend is present (the Docker image ships it), the API serves it too. One origin means
 # no CORS, and server-sent events reach the browser without an extra proxy hop.
-_DIST = Path(os.getenv("WEB_DIST_DIR") or config.PROJECT_ROOT / "udyam" / "frontend" / "dist")
+_DIST = Path(os.getenv("WEB_DIST_DIR") or config.APP_ROOT / "frontend" / "dist")
 if (_DIST / "index.html").exists():
     app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
 

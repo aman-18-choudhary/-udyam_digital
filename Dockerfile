@@ -20,7 +20,7 @@ COPY udyam/backend/app ./app
 COPY udyam/backend/alembic.ini ./
 COPY udyam/backend/alembic ./alembic
 COPY --from=web /w/dist /app/udyam/frontend/dist
-COPY YTL_TrackA_Udyam_Digital_Data/*.csv /app/YTL_TrackA_Udyam_Digital_Data/
+COPY udyam/data/*.csv /app/udyam/data/
 RUN chown -R app /app
 USER app
 ENV PYTHONUNBUFFERED=1 PORT=8000

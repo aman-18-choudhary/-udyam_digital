@@ -1,4 +1,5 @@
 # Local container run: the same single image Render builds. Reads udyam/backend/.env.
+# The case's CSV data is baked into the image.
 services:
   app:
     build:

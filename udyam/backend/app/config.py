@@ -4,7 +4,8 @@ from datetime import date
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = BASE_DIR.parent.parent
+APP_ROOT = BASE_DIR.parent            # the udyam/ directory (backend, frontend, data, docs)
+PROJECT_ROOT = APP_ROOT.parent
 
 
 def _load_dotenv() -> None:
@@ -32,7 +33,7 @@ def _flag(name: str, default: bool = False) -> bool:
     return _env(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
 
 
-DATA_DIR = Path(_env("UDYAM_DATA_DIR", str(PROJECT_ROOT / "YTL_TrackA_Udyam_Digital_Data")))
+DATA_DIR = Path(_env("UDYAM_DATA_DIR", str(APP_ROOT / "data")))
 
 # ---- mode ----------------------------------------------------------------------------------
 # DEMO_MODE turns on helpers that only make sense for showcasing: sample applicants, simulated
