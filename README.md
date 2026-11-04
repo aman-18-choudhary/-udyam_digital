@@ -6,7 +6,7 @@
 
 Built by **Team Cracker** for **Airtel Sync 2026 · Digital Track** (Enterprise Track A, Accel Business)
 
-[**Live app**](https://udyam-digital.onrender.com) · [**Demo video (2 min 48 s)**](udyam/docs/demo/udyam-demo.mp4) · [Architecture](udyam/docs/ARCHITECTURE.md) · [Privacy note](udyam/docs/PRIVACY_NOTE.md) · [Pitch deck](udyam/docs/TeamCracker_Airtel_Sync_Digital_draft.pdf)
+[**Live app**](https://udyam-digital.onrender.com) · [**Demo video (2 min 48 s)**](udyam/docs/demo/udyam-demo.mp4) · [Architecture](udyam/docs/ARCHITECTURE.md) · [Privacy note](udyam/docs/PRIVACY_NOTE.md) · [Pitch deck](udyam/docs/TeamCracker_Airtel_Sync_Digital.pdf)
 
 [![Watch the demo](udyam/docs/demo/udyam-demo-preview.gif)](udyam/docs/demo/udyam-demo.mp4)
 
